@@ -1,0 +1,6 @@
+federated:
+  num_clients: 10
+  dimension: 10000
+  round_id: 0
+  update_scale: 1.0
+

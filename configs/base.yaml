@@ -1,0 +1,16 @@
+experiment:
+  name: fedattr_mock
+  seed: 42
+  output_dir: outputs
+
+federated:
+  num_clients: 10
+  dimension: 10000
+  round_id: 0
+  update_scale: 1.0
+
+secure_agg:
+  query_counts: [2, 3, 5, 10, 20]
+  subset_size: 4
+  target_client_id: null
+
