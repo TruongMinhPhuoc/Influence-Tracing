@@ -3,9 +3,32 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 
 import torch
+
+
+@dataclass(frozen=True)
+class LayerCallContext:
+    """The exact positional/keyword arguments and tensor output of one layer call."""
+
+    args: tuple[Any, ...]
+    kwargs: Mapping[str, Any]
+    output: torch.Tensor
+
+    @property
+    def hidden_states(self) -> torch.Tensor:
+        if not self.args or not isinstance(self.args[0], torch.Tensor):
+            raise RuntimeError("Captured layer call has no tensor hidden-state input")
+        return self.args[0]
+
+
+@dataclass(frozen=True)
+class GlobalForwardTrace:
+    """Global model output paired with selected layer call contexts."""
+
+    model_output: Any
+    layers: Mapping[str, LayerCallContext]
 
 
 @dataclass
@@ -39,4 +62,3 @@ class LayerInputCapture:
 
     def __exit__(self, *_args: object) -> None:
         self.remove()
-

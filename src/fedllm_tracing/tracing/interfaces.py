@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 import torch
 
 from fedllm_tracing.federated.types import ClientUpdate
+from fedllm_tracing.tracing.hooks import GlobalForwardTrace, LayerCallContext
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,8 @@ class TokenAttribution:
     client_id: int
     token_id: int
     layer_scores: Mapping[str, float]
+    token_index: int = 0
+    sequence_position: int = 0
 
     @property
     def score(self) -> float:
@@ -34,9 +37,12 @@ class TokenTracer(ABC):
 
     @abstractmethod
     def capture_global_states(
-        self, global_model: Any, input_ids: torch.Tensor, layers: Sequence[str]
-    ) -> Mapping[str, torch.Tensor]:
-        """Capture each selected global layer's exact input tensor."""
+        self,
+        global_model: Any,
+        model_inputs: Mapping[str, torch.Tensor],
+        layers: Sequence[str],
+    ) -> GlobalForwardTrace:
+        """Run globally and capture exact selected layer calls and outputs."""
 
     @abstractmethod
     def compute_client_layer_activation(
@@ -44,16 +50,17 @@ class TokenTracer(ABC):
         global_model: Any,
         client_update: ClientUpdate,
         layer: str,
-        global_layer_input: torch.Tensor,
+        global_layer_call: LayerCallContext,
     ) -> torch.Tensor:
         """Apply a client-updated layer to the captured global layer input."""
 
     @abstractmethod
     def compute_token_gradient(
         self,
-        global_model: Any,
-        target_token_id: int,
+        target_logit: torch.Tensor,
         layer_output: torch.Tensor,
+        *,
+        retain_graph: bool = True,
     ) -> torch.Tensor:
         """Compute the target logit's gradient with respect to layer output."""
 
@@ -75,4 +82,3 @@ class TokenTracer(ABC):
         teacher_forcing: bool = True,
     ) -> Sequence[TokenAttribution]:
         """Trace every target token under its proper autoregressive context."""
-
