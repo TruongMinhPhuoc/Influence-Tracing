@@ -3,6 +3,9 @@
 Research infrastructure for privacy-preserving, behavior-specific client
 provenance tracing in federated language models under Secure Aggregation.
 
+Current implementation status, validated results, and the GPU handoff checklist
+are documented in [`docs/PROJECT_PROGRESS.md`](docs/PROJECT_PROGRESS.md).
+
 The immediate question is deliberately narrow: **does a noisy FedAttr-style
 estimate of a client update preserve enough information for ProToken client
 attribution?** This repository first builds a CPU-only, model-free testbed for
